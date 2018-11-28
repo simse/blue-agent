@@ -7,7 +7,7 @@ sched = BlockingScheduler()
 q = Queue(connection=conn)
 
 
-@sched.scheduled_job('interval', minutes=1)
+@sched.scheduled_job('interval', minutes=10)
 def timed_job():
     q.enqueue(sync)
 
