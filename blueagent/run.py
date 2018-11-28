@@ -27,8 +27,7 @@ def sync():
     for cat in categories:
         run_category(cat)
 
-    for item in Item.select():
-        verify_item(item.dba_url)
+
 
     logger.info("Blue Agent has finished sync with DBA")
 
@@ -78,10 +77,10 @@ def process_item(url):
             return False
 
         item.parse()
-        item.save_to_database()
+        if item.save_to_database():
 
-        logger.info("[NEW_ITEM] Loaded item: {}".format(url))
-        new_item_event(item.item)
+            logger.info("[NEW_ITEM] Loaded item: {}".format(url))
+            new_item_event(item.item)
 
 
 # Verify existence and remove from records if not
@@ -95,3 +94,9 @@ def verify_item(url):
         logger.info("[REMOVE_ITEM] Removed item as it's no longer on DBA: {}".format(url))
 
         Item.get(dba_url=url).delete()
+
+
+@db_session
+def verify_all_items():
+    for item in Item.select():
+        verify_item(item.dba_url)
