@@ -57,6 +57,10 @@ class CategoryPage(DbaPage):
             if str.strip(num.text) not in ['1', '2', '3', '...', 'Forrige', 'Næste']:
                 max_page = int(str.strip(num.text))
 
+        # Limit max page to 50
+        if max_page > 50:
+            max_page = 50
+
         for page in range(0, max_page):
             if page is 0:
                 all_pages.append(base_url)
