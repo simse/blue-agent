@@ -3,12 +3,12 @@ from pony.orm import *
 
 db = Database()
 
-if os.environ['HEROKU']:
+if os.environ['HEROKU'] == 'NO':
     db.bind(provider='postgres', host=os.environ['DATABASE_URL'], user="ba",
             database="blueagent", password="hotfla123As")
 
 else:
-    db.bind(provider='postgres', host=os.environ['DATABASE_URL'], sslmode='require')
+    db.bind(provider='postgres', dbname=os.environ['DATABASE_URL'], sslmode='require')
 
 
 class Item(db.Entity):
