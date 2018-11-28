@@ -1,4 +1,5 @@
 from multiprocessing import Pool
+from datetime import datetime, timedelta
 
 from rq import Queue
 
@@ -12,12 +13,12 @@ q = Queue(connection=conn)
 
 categories = [
     "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/baandoptagere/",
-    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/cd-afspillere/",
-    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/forstaerkere-hi-fi/",
-    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/hovedtelefoner/",
-    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/hoejttalere-hi-fi/",
-    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/pladespillere/",
-    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/stereoanlaeg/"
+    # "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/cd-afspillere/",
+    # "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/forstaerkere-hi-fi/",
+    # "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/hovedtelefoner/",
+    # "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/hoejttalere-hi-fi/",
+    # "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/pladespillere/",
+    # "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/stereoanlaeg/"
 ]
 
 
@@ -32,8 +33,7 @@ def sync(verify=False):
     for cat in categories:
         run_category(cat)
 
-    if verify:
-        verify_all_items()
+    clean_items()
 
     logger.info("Blue Agent has finished sync with DBA")
 
@@ -56,7 +56,7 @@ def run_category_once(page):
     listings = category_page.listings()
 
     # Parallel scraping
-    pool = Pool(10)
+    pool = Pool(5)
     pool.map(process_item, listings)
     pool.terminate()
     pool.join()
@@ -91,20 +91,6 @@ def process_item(url):
             new_item_event(item.item)
 
 
-# Verify existence and remove from records if not
 @db_session
-def verify_item(url):
-    item = ItemPage(url)
-
-    try:
-        item.fetch()
-    except IndexError:
-        logger.info("[REMOVE_ITEM] Removed item as it's no longer on DBA: {}".format(url))
-
-        Item.get(dba_url=url).delete()
-
-
-@db_session
-def verify_all_items():
-    for item in Item.select():
-        verify_item(item.dba_url)
+def clean_items():
+    select(i for i in Item if i.date_added + timedelta(days=3) >= datetime.now()).delete()

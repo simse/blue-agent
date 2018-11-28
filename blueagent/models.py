@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from urllib.parse import urlparse
 from pony.orm import *
 
@@ -26,6 +27,7 @@ class Item(db.Entity):
     images = Required(Json)
     item_data = Required(Json)
     seller = Required(Json)
+    date_added = Required(datetime)
 
 
 db.generate_mapping(create_tables=True)

@@ -10,6 +10,6 @@ from blueagent.run import *
 
 if __name__ == '__main__':
     while True:
-        sync()
+        quick_sync()
 
         time.sleep(60)

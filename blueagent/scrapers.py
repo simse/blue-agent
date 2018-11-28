@@ -1,5 +1,6 @@
 import re
 from types import SimpleNamespace
+from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
 from blueagent.models import *
@@ -58,8 +59,8 @@ class CategoryPage(DbaPage):
                 max_page = int(str.strip(num.text))
 
         # Limit max page to 50
-        if max_page > 20:
-            max_page = 20
+        if max_page > 5:
+            max_page = 5
 
         for page in range(0, max_page):
             if page is 0:
@@ -70,9 +71,16 @@ class CategoryPage(DbaPage):
         return all_pages
 
     def listings(self):
-        listing_links = [link.get('href') for link in self.parsed.find_all(class_='link-to-listing')]
+        listings = self.parsed.find_all(class_='dbaListing')
+        filtered_listings = []
 
-        return listing_links
+        for listing in listings:
+            date = listing.find_all(class_='simple')[0].text.strip()
+
+            if date in ["I dag", "I går"]:
+                filtered_listings.append(listing.find(class_='listingLink').get('href'))
+
+        return filtered_listings
 
 
 class ItemPage(DbaPage):
@@ -166,5 +174,6 @@ class ItemPage(DbaPage):
             price=self.item.price,
             images=self.item.images,
             item_data=self.item.item_data,
-            seller=self.item.seller
+            seller=self.item.seller,
+            date_added=datetime.now().strftime("%Y-%m-%d %H:%M")
         )
