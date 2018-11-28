@@ -18,4 +18,7 @@ def sync_job():
     q.enqueue(sync)
 
 
+# Run sync job once on startup
+q.enqueue(sync)
+
 sched.start()
