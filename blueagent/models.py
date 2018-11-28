@@ -8,7 +8,7 @@ if os.environ['HEROKU'] == 'NO':
             database="blueagent", password="hotfla123As")
 
 else:
-    db.bind(provider='postgres', host=os.environ['DATABASE_URL'], sslmode='require')
+    db.bind(os.environ['DATABASE_URL'], provider='postgres', sslmode='require')
 
 
 class Item(db.Entity):
