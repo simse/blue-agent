@@ -59,7 +59,7 @@ class CategoryPage(DbaPage):
 
         # Limit max page to 50
         if max_page > 50:
-            max_page = 5
+            max_page = 2
 
         for page in range(0, max_page):
             if page is 0:

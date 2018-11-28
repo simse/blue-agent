@@ -16,7 +16,6 @@ categories = [
 ]
 
 
-@db_session
 def sync():
     logger.info("Synchronizing with DBA")
 

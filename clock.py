@@ -22,4 +22,6 @@ def sync_job():
 logger.info("Running full sync before starting...")
 sync()
 
+logger.info("Sync finished...")
+
 sched.start()
