@@ -72,7 +72,11 @@ def process_item(url):
     item = ItemPage(url)
 
     if not item.exists():
-        item.fetch()
+        try:
+            item.fetch()
+        except IndexError:
+            return False
+
         item.parse()
         item.save_to_database()
 
