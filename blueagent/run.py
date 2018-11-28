@@ -1,45 +1,59 @@
 from multiprocessing import Pool
 
+from rq import Queue
+
+from worker import conn
 from blueagent.scrapers import *
 from blueagent.logger import logger
+from blueagent.event import new_item_event
+
+# Connect to worker
+q = Queue(connection=conn)
 
 categories = [
-    "https://www.dba.dk/billede-og-lyd/hi-fi-surround-og-tilbehoer/surroundsystemer/",
-    "https://www.dba.dk/billede-og-lyd/dvd-afspillere-videomaskiner-projektorer-og-tilbehoer/dvd-og-harddiskoptagere/",
-    "https://www.dba.dk/billede-og-lyd/analoge-kameraer/minolta/",
-    "https://www.dba.dk/boliger/lejebolig/bofaellesskaber/"
+    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/",
+    "https://www.dba.dk/billede-og-lyd/hi-fi-surround-og-tilbehoer/"
 ]
 
 
+@db_session
 def sync():
     logger.info("Synchronizing with DBA")
 
     logger.info("Loading {} categories".format(len(categories)))
 
-    logger.info("Checking first page of all categories")
-
-    # Check first page once
-    for cat in categories:
-        run_category_once(cat)
-
     logger.info("Checking all pages of all categories")
 
-    # And then do a deep check
+    # Check everything on DBA
     for cat in categories:
         run_category(cat)
+
+    for item in Item.select():
+        verify_item(item.dba_url)
 
     logger.info("Blue Agent has finished sync with DBA")
 
 
+def quick_sync():
+    logger.info("Performing quick sync with DBA")
+
+    logger.info("Loading {} categories".format(len(categories)))
+
+    for cat in categories:
+        q.enqueue(run_category_once, cat)
+
+    logger.info("Quick sync completed")
+
+
 def run_category_once(page):
-    logger.info("Fetching category page: {}".format(page))
+    logger.info("[CATEGORY] Fetching category page: {}".format(page))
     category_page = CategoryPage(page)
     category_page.fetch()
     listings = category_page.listings()
 
     # Parallel scraping
     pool = Pool(5)
-    items = pool.map(process_item, listings)
+    pool.map(process_item, listings)
     pool.terminate()
     pool.join()
 
@@ -61,3 +75,19 @@ def process_item(url):
         item.fetch()
         item.parse()
         item.save_to_database()
+
+        logger.info("[NEW_ITEM] Loaded item: {}".format(url))
+        new_item_event(item.item)
+
+
+# Verify existence and remove from records if not
+@db_session
+def verify_item(url):
+    item = ItemPage(url)
+
+    try:
+        item.fetch()
+    except IndexError:
+        logger.info("[REMOVE_ITEM] Removed item as it's no longer on DBA: {}".format(url))
+
+        Item.get(dba_url=url).delete()

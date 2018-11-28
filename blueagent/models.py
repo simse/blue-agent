@@ -22,6 +22,7 @@ class Item(db.Entity):
     dba_url = Required(str)
     title = Required(str)
     description = Required(str)
+    price = Required(int)
     images = Required(Json)
     item_data = Required(Json)
     seller = Required(Json)

@@ -88,6 +88,7 @@ class ItemPage(DbaPage):
             "dba_url": self.url,
             "title": None,
             "description": None,
+            "price": None,
             "item_data": None,
             "images": None,
             "seller": SimpleNamespace(**{
@@ -102,6 +103,7 @@ class ItemPage(DbaPage):
         item.title = self.parsed.find('h1').string
         item.description = self.parsed.find(class_='vip-additional-text').text
         item.dba_id = re.search('\d{10}', self.url).group()
+        item.price = int(self.parsed.find(class_='price-tag').text.replace(' kr.', '').replace('.', ''))
 
         # Find seller information
         item.seller.name = self.parsed.select('.profile-information h2.fn a')[0].text
@@ -153,13 +155,12 @@ class ItemPage(DbaPage):
 
     @db_session
     def save_to_database(self):
-        logger.info("Loading and saving item: {}".format(self.url))
-
         return Item(
             dba_id=self.item.dba_id,
             dba_url=self.item.dba_url,
             title=self.item.title,
             description=self.item.description,
+            price=self.item.price,
             images=self.item.images,
             item_data=self.item.item_data,
             seller=self.item.seller
