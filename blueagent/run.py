@@ -79,6 +79,8 @@ def process_item(url):
         item.parse()
         if item.save_to_database():
 
+            commit()
+
             logger.info("[NEW_ITEM] Loaded item: {}".format(url))
             new_item_event(item.item)
 
