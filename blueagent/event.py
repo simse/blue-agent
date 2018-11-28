@@ -14,6 +14,6 @@ def new_item_event(item):
     sc.api_call(
         "chat.postMessage",
         channel="CEEC4PCSW",
-        text="[{}] New item: {}".format(datetime.datetime, item.dba_url)
+        text="[{}] New item: {}".format(datetime.datetime.now(), item.dba_url)
     )
 
