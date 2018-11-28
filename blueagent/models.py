@@ -1,4 +1,5 @@
 import os
+from urllib.parse import urlparse
 from pony.orm import *
 
 db = Database()
@@ -8,7 +9,11 @@ if os.environ['HEROKU'] == 'NO':
             database="blueagent", password="hotfla123As")
 
 else:
-    db.bind(os.environ['DATABASE_URL'], provider='postgres', sslmode='require')
+    # Parse that dumb string
+    db_url = urlparse(os.environ['DATABASE_URL'])
+
+    db.bind(provider='postgres', host=db_url.hostname, user=db_url.username,  database=db_url.path[1:],
+            password=db_url.password, sslmode='require')
 
 
 class Item(db.Entity):

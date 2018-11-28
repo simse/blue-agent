@@ -30,8 +30,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/blueagent/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="340">
-              <caret line="10" column="40" selection-start-line="10" selection-start-column="40" selection-end-line="10" selection-end-column="40" />
+            <state relative-caret-position="374">
+              <caret line="14" column="103" selection-start-line="14" selection-start-column="103" selection-end-line="14" selection-end-column="103" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -179,12 +179,12 @@
       <option name="presentableId" value="Default" />
       <updated>1543411262399</updated>
       <workItem from="1543411264768" duration="341000" />
-      <workItem from="1543411626008" duration="2385000" />
+      <workItem from="1543411626008" duration="2899000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2726000" />
+    <option name="totallyTimeSpent" value="3240000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -272,8 +272,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/blueagent/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="340">
-          <caret line="10" column="40" selection-start-line="10" selection-start-column="40" selection-end-line="10" selection-end-column="40" />
+        <state relative-caret-position="374">
+          <caret line="14" column="103" selection-start-line="14" selection-start-column="103" selection-end-line="14" selection-end-column="103" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
