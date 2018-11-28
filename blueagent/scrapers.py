@@ -157,7 +157,6 @@ class ItemPage(DbaPage):
 
         return item
 
-    @db_session
     def save_to_database(self):
         return Item(
             dba_id=self.item.dba_id,

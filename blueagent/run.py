@@ -67,6 +67,7 @@ def run_category(base_url):
 
 
 # Utility functions
+@db_session
 def process_item(url):
     item = ItemPage(url)
 
