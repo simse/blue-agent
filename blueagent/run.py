@@ -11,15 +11,15 @@ from blueagent.event import new_item_event
 # Connect to worker
 q = Queue(connection=conn)
 
-categories = [
-    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/baandoptagere/",
-    # "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/cd-afspillere/",
-    # "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/forstaerkere-hi-fi/",
-    # "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/hovedtelefoner/",
-    # "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/hoejttalere-hi-fi/",
-    # "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/pladespillere/",
-    # "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/stereoanlaeg/"
-]
+categories = []
+
+with db_session:
+    profiles = Profile.select()
+
+    for profile in profiles:
+        categories = categories + profile.monitored_categories
+
+categories = list(set(categories))
 
 
 def sync(verify=False):
@@ -93,4 +93,4 @@ def process_item(url):
 
 @db_session
 def clean_items():
-    select(i for i in Item if i.date_added + timedelta(days=3) >= datetime.now()).delete()
+    print(select(i for i in Item if i.date_added + timedelta(days=3) >= datetime.now()))

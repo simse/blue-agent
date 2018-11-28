@@ -30,4 +30,12 @@ class Item(db.Entity):
     date_added = Required(datetime)
 
 
+class Profile(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    first_name = Required(str)
+    phone_number = Required(int)
+    monitored_categories = Optional(Json)
+    rules = Optional(Json)
+
+
 db.generate_mapping(create_tables=True)
