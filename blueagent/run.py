@@ -52,7 +52,7 @@ def run_category_once(page):
     listings = category_page.listings()
 
     # Parallel scraping
-    pool = Pool(20)
+    pool = Pool(10)
     pool.map(process_item, listings)
     pool.terminate()
     pool.join()
