@@ -11,12 +11,17 @@ from blueagent.event import new_item_event
 q = Queue(connection=conn)
 
 categories = [
-    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/",
-    "https://www.dba.dk/billede-og-lyd/hi-fi-surround-og-tilbehoer/"
+    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/baandoptagere/",
+    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/cd-afspillere/",
+    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/forstaerkere-hi-fi/",
+    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/hovedtelefoner/",
+    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/hoejttalere-hi-fi/",
+    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/pladespillere/",
+    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/stereoanlaeg/"
 ]
 
 
-def sync():
+def sync(verify=False):
     logger.info("Synchronizing with DBA")
 
     logger.info("Loading {} categories".format(len(categories)))
@@ -27,7 +32,8 @@ def sync():
     for cat in categories:
         run_category(cat)
 
-
+    if verify:
+        verify_all_items()
 
     logger.info("Blue Agent has finished sync with DBA")
 

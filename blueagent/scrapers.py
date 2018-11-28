@@ -58,8 +58,8 @@ class CategoryPage(DbaPage):
                 max_page = int(str.strip(num.text))
 
         # Limit max page to 50
-        if max_page > 50:
-            max_page = 15
+        if max_page > 20:
+            max_page = 20
 
         for page in range(0, max_page):
             if page is 0:
