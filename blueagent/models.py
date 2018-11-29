@@ -36,6 +36,7 @@ class Profile(db.Entity):
     phone_number = Required(int)
     monitored_categories = Optional(Json)
     rules = Optional(Json)
+    welcomed = Required(bool)
 
 
 db.generate_mapping(create_tables=True)

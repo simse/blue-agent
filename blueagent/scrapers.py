@@ -5,6 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 from blueagent.models import *
 from blueagent.logger import logger
+from blueagent.filters import *
 
 
 class DbaPage:
@@ -58,7 +59,7 @@ class CategoryPage(DbaPage):
             if str.strip(num.text) not in ['1', '2', '3', '...', 'Forrige', 'Næste']:
                 max_page = int(str.strip(num.text))
 
-        # Limit max page to 50
+        # Limit max page to 5
         if max_page > 5:
             max_page = 5
 
@@ -164,6 +165,9 @@ class ItemPage(DbaPage):
         item = vars(item)
 
         return item
+
+    def filter(self, filter_name, filter_args):
+        return filters[filter_name](self.item, filter_args)
 
     def save_to_database(self):
         return Item(

@@ -6,7 +6,7 @@ from rq import Queue
 from worker import conn
 from blueagent.scrapers import *
 from blueagent.logger import logger
-from blueagent.event import new_item_event
+from blueagent.event import new_item_event, new_user
 
 # Connect to worker
 q = Queue(connection=conn)
@@ -22,7 +22,7 @@ with db_session:
 categories = list(set(categories))
 
 
-def sync(verify=False):
+def sync():
     logger.info("Synchronizing with DBA")
 
     logger.info("Loading {} categories".format(len(categories)))
@@ -47,6 +47,14 @@ def quick_sync():
         q.enqueue(run_category_once, cat)
 
     logger.info("Quick sync completed")
+
+
+@db_session
+def welcome_users():
+    profiles = Profile.select(lambda p: not p.welcomed)
+
+    for profile in profiles:
+        new_user(profile)
 
 
 def run_category_once(page):
@@ -83,12 +91,15 @@ def process_item(url):
             return False
 
         item.parse()
+
+        print(item.filter('contains_text', {"text": "Bose"}))
+
         if item.save_to_database():
 
             commit()
 
             logger.info("[NEW_ITEM] Loaded item: {}".format(url))
-            new_item_event(item.item)
+            new_item_event(item)
 
 
 @db_session
