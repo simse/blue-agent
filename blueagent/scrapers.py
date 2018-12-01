@@ -20,10 +20,10 @@ class DbaPage:
         }
 
         proxies = {
-            'https': 'socks5://194.182.80.21:3029'
+            
         }
 
-        page = requests.get(self.url + '?fra=privat', headers=headers, proxies=proxies)
+        page = requests.get(self.url + '?fra=privat', headers=headers)
 
         # Detect redirect
         if len(page.history) > 0:
