@@ -1,15 +1,9 @@
 from multiprocessing import Pool
 from datetime import datetime, timedelta
 
-from rq import Queue
-
-from worker import conn
 from blueagent.scrapers import *
 from blueagent.logger import logger
 from blueagent.event import new_item_event, new_user
-
-# Connect to worker
-q = Queue(connection=conn)
 
 categories = []
 
@@ -33,8 +27,6 @@ def sync():
     for cat in categories:
         run_category(cat)
 
-    clean_items()
-
     logger.info("Blue Agent has finished sync with DBA")
 
 
@@ -44,7 +36,7 @@ def quick_sync():
     logger.info("Loading {} categories".format(len(categories)))
 
     for cat in categories:
-        q.enqueue(run_category_once, cat)
+        run_category_once(cat)
 
     logger.info("Quick sync completed")
 
@@ -92,8 +84,6 @@ def process_item(url):
 
         item.parse()
 
-        print(item.filter('contains_text', {"text": "Bose"}))
-
         if item.save_to_database():
 
             commit()
@@ -104,4 +94,7 @@ def process_item(url):
 
 @db_session
 def clean_items():
-    print(select(i for i in Item if i.date_added + timedelta(days=3) >= datetime.now()))
+    items = select(
+        i for i in Item if i.date_added + timedelta(days=3) <= datetime.now()
+    ).delete()
+
