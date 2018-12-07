@@ -7,7 +7,8 @@ import time
 from blueagent.threads import *
 from blueagent.logger import *
 
-if __name__ == '__main__':
+
+def run():
     logger.info("[BLUE-AGENT] Starting main loop. Welcome.")
 
     web = WebThread()
