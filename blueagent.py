@@ -11,9 +11,9 @@ from blueagent.logger import *
 def run():
     logger.info("[BLUE-AGENT] Starting main loop. Welcome.")
 
-    web = WebThread()
+    # web = WebThread()
     blueagent = BlueAgentThread()
-    web.start()
+    # web.start()
     blueagent.start()
 
 
