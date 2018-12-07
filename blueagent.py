@@ -17,5 +17,4 @@ def run():
     blueagent.start()
 
 
-if __name__ is "__name__":
-    run()
+run()
