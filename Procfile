@@ -1,1 +1,1 @@
-web: gunicorn blueagent:run
+web: python3.7 blueagent.py
