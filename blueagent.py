@@ -15,3 +15,7 @@ def run():
     blueagent = BlueAgentThread()
     web.start()
     blueagent.start()
+
+
+if __name__ is "__name__":
+    run()
