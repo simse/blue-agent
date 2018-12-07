@@ -1,1 +1,1 @@
-blueagent: python3.7 blueagent.py
+web: python3.7 blueagent.py
