@@ -58,4 +58,13 @@ def price_under(item, args):
     return False
 
 
+def price_over(item, args):
+    args = parse_args(args)
+
+    if item.price >= int(args['price']):
+        return True
+
+    return False
+
+
 bootstrap()

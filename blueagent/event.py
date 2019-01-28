@@ -12,7 +12,7 @@ twilio_client = Client(os.environ['TWILIO_SID'], os.environ['TWILIO_TOKEN'])
 
 def new_item_event(item):
     # logger.info("New item, processing....")
-    sc = SlackClient(os.environ['SLACK_API_KEY'])
+    # sc = SlackClient(os.environ['SLACK_API_KEY'])
 
     # Temp send to Slack
     #sc.api_call(
@@ -65,8 +65,8 @@ def item_match(profile, item):
     body = 'Jeg har fundet en annonce til dig!\nTitel: {}\nPris: {}DKK\n{}'.format(item.title, item.price, item.dba_url)
 
     # Message
-    message = twilio_client.messages.create(
-        to=phone_number,
-        messaging_service_sid='MG7d683a3611bf5c55cd59297e4a023795',
-        body=body
-    )
+    #message = twilio_client.messages.create(
+    #    to=phone_number,
+    #    messaging_service_sid='MG7d683a3611bf5c55cd59297e4a023795',
+    #    body=body
+    #)
