@@ -7,5 +7,7 @@ WORKDIR /app/walsingham
 RUN pip install -r requirements.txt
 
 EXPOSE 80
+ENV DATABASE_NAME walsingham
+ENV WEB_PORT 80
 
 ENTRYPOINT ["python blueagent.py"]
