@@ -1,15 +1,16 @@
 import re
 from types import SimpleNamespace
 from datetime import datetime
+
 import requests
 from bs4 import BeautifulSoup
+
 from blueagent.models import *
 from blueagent.logger import logger
 from blueagent.filters import *
 
 
 class DbaPage:
-
     def __init__(self, url):
         self.url = url
         self.parsed = None
@@ -17,10 +18,6 @@ class DbaPage:
     def fetch(self):
         headers = {
             'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-        }
-
-        proxies = {
-            
         }
 
         page = requests.get(self.url + '?fra=privat', headers=headers)
@@ -35,7 +32,6 @@ class DbaPage:
 
 
 class CategoryPage(DbaPage):
-
     def next_page(self):
         regex = re.compile('\d{1,4}')
         search = regex.search(self.url)
@@ -85,7 +81,6 @@ class CategoryPage(DbaPage):
 
 
 class ItemPage(DbaPage):
-
     def __init__(self, url):
         super().__init__(url)
 
@@ -93,7 +88,7 @@ class ItemPage(DbaPage):
 
     @db_session
     def exists(self):
-        return Item.get(dba_url=self.url) is not None
+        return Item.get(url=self.url) is not None
 
     def parse(self):
         item = SimpleNamespace(**{
@@ -119,12 +114,12 @@ class ItemPage(DbaPage):
         item.price = int(self.parsed.find(class_='price-tag').text.replace(' kr.', '').replace('.', ''))
 
         # Find seller information
-        item.seller.name = self.parsed.select('.profile-information h2.fn a')[0].text
+        item.seller.name = self.parsed.select('.ProfileTitle_profile-title__2rvIX')[0].text
 
-        street = self.parsed.select('.profile-information .street-address')
+        street = self.parsed.select('.ProfileAddress_profile-address__3WZfH')
         if street:
             item.seller.street = street[0].text
-        item.seller.postal_code = re.search('\d{4}', self.parsed.select('.profile-information .postal-code')[0].text).group()
+        #item.seller.postal_code = re.search('\d{4}', self.parsed.select('.profile-information .postal-code')[0].text).group()
 
         # Specific item data
         table_contents = self.parsed.select('.vip-matrix-data table tbody tr')
@@ -166,13 +161,14 @@ class ItemPage(DbaPage):
 
         return item
 
-    def filter(self, filter_name, filter_args):
+    def evaluate_filter(self, filter_name, filter_args):
         return filters[filter_name](self.item, filter_args)
 
     def save_to_database(self):
         return Item(
-            dba_id=self.item.dba_id,
-            dba_url=self.item.dba_url,
+            provider="DBA",
+            provider_id=self.item.dba_id,
+            url=self.item.dba_url,
             title=self.item.title,
             description=self.item.description,
             price=self.item.price,

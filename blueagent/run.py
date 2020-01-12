@@ -3,42 +3,35 @@ from datetime import datetime, timedelta
 
 from blueagent.scrapers import *
 from blueagent.logger import logger
-from blueagent.event import new_item_event, new_user
+from blueagent.event import event
 
-categories = []
-
-with db_session:
-    profiles = Profile.select()
-
-    for profile in profiles:
-        categories = categories + profile.monitored_categories
-
-categories = list(set(categories))
+categories = [
+    "https://www.dba.dk/billede-og-lyd/hi-fi-surround-og-tilbehoer/",
+    "https://www.dba.dk/billede-og-lyd/hi-fi-og-tilbehoer/",
+    "https://www.dba.dk/musikinstrumenter/forstaerkere-pedaler-anlaeg-mm/"
+]
 
 
 def sync():
-    logger.info("Synchronizing with DBA")
-
-    logger.info("Loading {} categories".format(len(categories)))
-
-    logger.info("Checking all pages of all categories")
+    logger.info("[WALSINGHAM] Performing full sync with DBA")
+    logger.info("[WALSINGHAM] Scraping {} categories".format(len(categories)))
 
     # Check everything on DBA
     for cat in categories:
         run_category(cat)
 
-    logger.info("Blue Agent has finished sync with DBA")
+    logger.info("[WALSINGHAM] Full sync completed")
 
 
 def quick_sync():
-    logger.info("Performing quick sync with DBA")
+    logger.info("[WALSINGHAM] Performing quick sync with DBA")
 
-    logger.info("Loading {} categories".format(len(categories)))
+    logger.info("[WALSINGHAM] Scraping {} categories".format(len(categories)))
 
     for cat in categories:
         run_category_once(cat)
 
-    logger.info("Quick sync completed")
+    logger.info("[WALSINGHAM] Quick sync completed")
 
 
 @db_session
@@ -46,7 +39,7 @@ def welcome_users():
     profiles = Profile.select(lambda p: not p.welcomed)
 
     for profile in profiles:
-        new_user(profile)
+        event.trigger('new_user', profile)
 
 
 def run_category_once(page):
@@ -54,6 +47,9 @@ def run_category_once(page):
     category_page = CategoryPage(page)
     category_page.fetch()
     listings = category_page.listings()
+
+    #for listing in listings:
+    #    process_item(listing)
 
     # Parallel scraping
     pool = Pool(5)
@@ -85,11 +81,9 @@ def process_item(url):
         item.parse()
 
         if item.save_to_database():
-
             commit()
-
             logger.info("[NEW_ITEM] Loaded item: {}".format(url))
-            new_item_event(item)
+            event.trigger('new_item_event', item)
 
 
 @db_session

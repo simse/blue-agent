@@ -5,24 +5,17 @@ from pony.orm import *
 
 db = Database()
 
-if os.environ['HEROKU'] == 'NO':
-    db.bind(provider='postgres', host=os.environ['DATABASE_URL'], user="ba",
-            database="blueagent", password="hotfla123As")
-
-else:
-    # Parse that dumb string
-    db_url = urlparse(os.environ['DATABASE_URL'])
-
-    db.bind(provider='postgres', host=db_url.hostname, user=db_url.username,  database=db_url.path[1:],
-            password=db_url.password, sslmode='require')
+db.bind(provider='mysql', host='192.168.0.4', user="root",
+        database=os.getenv("DATABASE_NAME"), password="EbYRQzWzTDdbkX2XW5hf")
 
 
 class Item(db.Entity):
     id = PrimaryKey(int, auto=True)
-    dba_id = Required(int)
-    dba_url = Required(str)
+    provider = Required(str)
+    provider_id = Required(str)
+    url = Required(str)
     title = Required(str)
-    description = Required(str)
+    description = Required(str, max_len=5000)
     price = Required(int)
     images = Required(Json)
     item_data = Required(Json)
@@ -33,10 +26,40 @@ class Item(db.Entity):
 class Profile(db.Entity):
     id = PrimaryKey(int, auto=True)
     first_name = Required(str)
-    phone_number = Required(int)
-    monitored_categories = Optional(Json)
-    rules = Optional(Json)
+    email = Required(str)
+    password = Required(str)
+    messenger_id = Required(str)
     welcomed = Required(bool)
+    monitors = Set("Monitor")
+    session_keys = Set("Session")
+    notifications = Set("Notification")
+
+
+class Monitor(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    user = Required(Profile)
+    name = Required(str)
+    filters = Required(Json)
+    hits = Set("Hit")
+
+
+class Hit(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    trigger = Required(Monitor)
+    date_triggered = Required(datetime)
+
+
+class Session(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    user = Required(Profile)
+    session_key = Required(str)
+    expires = Required(datetime)
+
+
+class Notification(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    recipient = Required(Profile)
+    body = Required(str, max_len=5000)
 
 
 db.generate_mapping(create_tables=True)

@@ -1,28 +1,9 @@
 import json
-
-
-filters = {
-
-}
-
-
-# Bootstrap
-def bootstrap():
-    register_filter('contains_text', contains_text)
-    register_filter('is_product', is_product)
-    register_filter('price_under', price_under)
-
+from blueagent.logger import logger
 
 # Global filter functions
 def parse_args(args):
-
     return args
-
-
-def register_filter(name, filter):
-    filters[name] = filter
-
-    return True
 
 
 # Filters
@@ -67,4 +48,9 @@ def price_over(item, args):
     return False
 
 
-bootstrap()
+filters = {
+    'contains_text': contains_text,
+    'is_product': is_product,
+    'price_under': price_under,
+    'price_over': price_over
+}

@@ -1,11 +1,38 @@
 import threading
+from datetime import datetime, timedelta
+from functools import wraps
+import random
+import string
 import time
-from flask import Flask, jsonify
+import json
+
+from flask import Flask, jsonify, request
+from fbchat import Client
+from fbchat.models import *
+
 from blueagent.run import *
 from blueagent.logger import logger
+from blueagent.models import Profile, Session
 
 # HTTP server
 app = Flask(__name__)
+
+
+# Authentication decorator
+def auth_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Verify existence of session key
+        if(request.args.get('session_key')):
+            pass
+        elif(request.form.get('session_key')):
+            pass
+        else:
+            return jsonify({"error":"NO_SESSION_KEY","error_msg":"You must supply a session key to access this route."})
+
+        return f(*args, **kwargs)
+
+    return decorated_function
 
 
 class WebThread(threading.Thread):
@@ -14,7 +41,7 @@ class WebThread(threading.Thread):
         threading.Thread.__init__(self, name='WebThread')
 
     def run(self):
-        app.run(host='0.0.0.0', port=80)
+        app.run(host='0.0.0.0', port=8000)
 
 
 @app.route('/')
@@ -22,9 +49,126 @@ def index():
     return 'Hello world!'
 
 
+@app.route('/auth', methods=['POST'])
+@db_session
+def auth():
+    email = ''
+    password = ''
+
+    # Verify existence of email
+    try:
+        email = request.get_json()['email']
+    except(KeyError):
+        return jsonify({"error":"NO_EMAIL","error_msg":"You must supply an email to authenticate."})
+
+    # Verify existence of password
+    try:
+        password = request.get_json()['password']
+    except(KeyError):
+        return jsonify({"error":"NO_PASSWORD","error_msg":"You must supply a password to authenticate."})
+
+    # Fetch user
+    user = Profile.get(email=email)
+
+    # Create session key (TODO: Actually authenticate)
+    session = Session(
+        user=user,
+        session_key=''.join(random.choice(string.ascii_lowercase) for i in range(12)),
+        expires=datetime.now() + timedelta(days=3)
+    )
+
+    return jsonify({"msg":"Welcome.", "session_key": session.session_key})
+
+
+@app.route('/user', methods=['GET'])
+@auth_required
+@db_session
+def get_user():
+    session_key = request.args.get('session_key')
+
+    # Get user associated with session key
+    user = Session.get(session_key=session_key).user.to_dict()
+
+    # Delete hashed password
+    del user['password']
+
+    return jsonify(user)
+
+
+@app.route('/monitor', methods=['GET'])
+@auth_required
+@db_session
+def get_monitors():
+    session_key = request.args.get('session_key')
+
+    # Get user associated with session key
+    user = Session.get(session_key=session_key).user
+
+    monitors = []
+    for m in user.monitors:
+        monitors.append(m.to_dict())
+
+    return jsonify(monitors)
+
+
+@app.route('/monitor/<id>', methods=['GET'])
+@auth_required
+@db_session
+def get_monitor(id):
+    session_key = request.args.get('session_key')
+
+    # Get user associated with session key
+    user = Session.get(session_key=session_key).user
+
+    m = Monitor.get(id=id)
+
+    return jsonify(m.to_dict())
+
+
+@app.route('/monitor', methods=['POST'])
+@auth_required
+@db_session
+def post_monitor():
+    session_key = request.form.get('session_key')
+
+    # Get user associated with session key
+    user = Session.get(session_key=session_key).user
+
+    # Create new monitor if no ID is found
+    if not request.form.get('id'):
+        m = Monitor(
+            name=request.form.get('name'),
+            user=user,
+            filters=[]
+        )
+
+    # Update monitor if it already exists
+    else:
+        m = Monitor.get(id=request.form.get('id'))
+        m.name = request.form.get('name')
+        m.filters = json.loads(request.form.get('filters'))
+
+
+    return jsonify(m.to_dict())
+
+
+@app.route('/monitor', methods=['DELETE'])
+@auth_required
+@db_session
+def delete_monitor():
+    session_key = request.form.get('session_key')
+
+    # Get user associated with session key
+    user = Session.get(session_key=session_key).user
+
+    m = Monitor.get(id=request.form.get('id'))
+    m.delete()
+
+    return jsonify({})
+
+
 # Blue Agent
 class BlueAgentThread(threading.Thread):
-
     def __init__(self):
         threading.Thread.__init__(self, name='BlueAgentThread')
 
@@ -34,16 +178,13 @@ class BlueAgentThread(threading.Thread):
         while True:
             # Run certain tasks
             if cycle is 0:
-                logger.info("[BLUE-AGENT] Running full sync.")
                 sync()
 
             if cycle % 10 is 0:
-                logger.info("[BLUE-AGENT] Performing quick sync.")
                 quick_sync()
                 welcome_users()
 
             if cycle % 60 is 0:
-                logger.info("[BLUE-AGENT] Cleaning database.")
                 clean_items()
 
             cycle += 1
@@ -53,3 +194,31 @@ class BlueAgentThread(threading.Thread):
                 cycle = 0
 
             time.sleep(1)
+
+
+# Notification thread
+class NotificationThread(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self, name='NotificationThread')
+        logger.info("[NOTIFICATIONS] Connecting to Facebook Messenger")
+
+        self.client = Client('walsingham@simse.io', 'NuhpZ.Ujqqz8zavbN7nV')
+
+    def run(self):
+        while True:
+            self.send_notifications()
+
+            time.sleep(1)
+
+    @db_session
+    def send_notifications(self):
+        # Fetch pending notifications
+        notifications = Notification.select()
+
+        if(len(notifications) > 0):
+            for notification in notifications:
+                recipient = notification.recipient.messenger_id
+                body = notification.body
+
+                self.client.send(Message(text=body), thread_id=recipient, thread_type=ThreadType.USER)
+                notification.delete()

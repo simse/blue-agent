@@ -1,72 +1,70 @@
 import os
 import datetime
 
-from slackclient import SlackClient
-from twilio.rest import Client
+from observable import Observable
 
 from blueagent.logger import logger
 from blueagent.models import *
+from blueagent.filters import filters
 
-twilio_client = Client(os.environ['TWILIO_SID'], os.environ['TWILIO_TOKEN'])
 
+event = Observable()
 
+@event.on("new_item")
 def new_item_event(item):
-    # logger.info("New item, processing....")
-    # sc = SlackClient(os.environ['SLACK_API_KEY'])
-
-    # Temp send to Slack
-    #sc.api_call(
-    #    "chat.postMessage",
-    #    channel="CEEC4PCSW",
-    #    text="[{}] New item: {}".format(datetime.datetime.now(), item.dba_url)
-    #)
-
     # Check all rules from profiles
-    with db_session:
-        profiles = Profile.select()
+    monitors = Monitor.select()
 
-        for profile in profiles:
-            rules = profile.rules
+    # Iterate through all monitors
+    for monitor in monitors:
+        passed = False
 
-            for rule in rules:
+        # Check all filters
+        for f in monitor.filters:
+            try:
+                if item.evaluate_filter(f['filter'], f['args']):
+                    passed = True
+                else:
+                    passed = False
+                    break
+            except AttributeError:
+                passed = False
+                break
 
-                rule_pass = True
 
-                for part in rule:
-
-                    if not item.filter(part, rule[part]):
-                        rule_pass = False
-
-                if rule_pass:
-                    item_match(profile, item.item)
+        if passed:
+            item_match(monitor.user, item.item, monitor)
 
 
+@event.on("new_user")
 def new_user(profile):
-    logger.info("[NEW USER] Sending SMS...")
+    logger.info("[NEW USER] Sending notification...")
 
-    body = 'Hej, {}!\nVelkommen til Den Blå Agent. Jeg kan hjælpe dig med at finde interessante annoncer på DBA. \
-Fra nu af modtager du en SMS, når jeg finder noget. \
-I øjeblikket leder jeg after {} ting til dig.'.format(profile.first_name, len(profile.rules))
+    body = 'Hej, {}!\nVelkommen til Walsingham. Jeg kan hjælpe dig med at finde interessante annoncer på DBA. \
+Fra nu af modtager du en besked, når jeg finder noget til dig. \
+For at tilføje overvågningsfiltre skal du logge ind på https://walsingham.app.'.format(profile.first_name)
 
-    message = twilio_client.messages.create(
-        to='+45' + str(profile.phone_number),
-        messaging_service_sid='MG7d683a3611bf5c55cd59297e4a023795',
+    n = Notification(
+        recipient=profile,
         body=body
     )
 
-    if message:
-        profile.welcomed = True
+    profile.welcomed = True
 
 
-def item_match(profile, item):
+@event.on("item_match")
+def item_match(profile, item, monitor):
     logger.info("[ITEM MATCH] Notifying profile")
 
-    phone_number = '+45' + str(profile.phone_number)
     body = 'Jeg har fundet en annonce til dig!\nTitel: {}\nPris: {}DKK\n{}'.format(item.title, item.price, item.dba_url)
 
     # Message
-    #message = twilio_client.messages.create(
-    #    to=phone_number,
-    #    messaging_service_sid='MG7d683a3611bf5c55cd59297e4a023795',
-    #    body=body
-    #)
+    n = Notification(
+        recipient=profile,
+        body=body
+    )
+
+    h = Hit(
+        trigger=monitor,
+        date_triggered=datetime.datetime.now()
+    )
