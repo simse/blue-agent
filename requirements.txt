@@ -1,8 +1,11 @@
+aenum==2.2.3
 APScheduler==3.5.3
+attrs==19.3.0
 beautifulsoup4==4.6.3
 certifi==2018.10.15
 chardet==3.0.4
 Click==7.0
+fbchat==1.9.3
 Flask==1.0.2
 gunicorn==19.9.0
 idna==2.7
@@ -11,11 +14,15 @@ Jinja2==2.10
 lxml==4.2.5
 MarkupSafe==1.1.0
 msgpack==0.5.6
+observable==1.0.3
+paho-mqtt==1.5.0
 pony==0.7.6
 psycopg2==2.7.6.1
 psycopg2-binary==2.7.6.1
 PyJWT==1.6.4
+PyMySQL==0.9.3
 PySocks==1.6.8
+python-dotenv==0.10.3
 pytz==2018.7
 requests==2.20.1
 six==1.11.0
@@ -27,4 +34,4 @@ urllib3==1.24.1
 websocket-client==0.54.0
 Werkzeug==0.14.1
 whitenoise==4.1.2
-fbchat
+dotenv
