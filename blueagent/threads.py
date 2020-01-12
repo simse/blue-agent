@@ -10,6 +10,7 @@ import json
 import os
 
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from fbchat import Client
 from fbchat.models import *
 
@@ -19,6 +20,7 @@ from blueagent.models import Profile, Session
 
 # HTTP server
 app = Flask(__name__)
+CORS(app)
 
 # Password hashing
 def hash_password(password):
@@ -65,8 +67,6 @@ class WebThread(threading.Thread):
         threading.Thread.__init__(self, name='WebThread')
 
     def run(self):
-        print(hash_password("hotfla123As"))
-
         app.run(host='0.0.0.0', port=os.getenv("WEB_PORT"))
 
 
@@ -107,6 +107,12 @@ def auth():
     )
 
     return jsonify({"msg":"Welcome.", "session_key": session.session_key})
+
+
+@app.route('/ping')
+@auth_required
+def get_user():
+    return jsonify({"status":"OK"})
 
 
 @app.route('/user', methods=['GET'])
