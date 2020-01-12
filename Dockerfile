@@ -10,4 +10,4 @@ EXPOSE 80
 ENV DATABASE_NAME walsingham
 ENV WEB_PORT 80
 
-CMD ["python blueagent.py"]
+CMD ["python", "blueagent.py"]
