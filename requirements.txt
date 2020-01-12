@@ -34,4 +34,3 @@ urllib3==1.24.1
 websocket-client==0.54.0
 Werkzeug==0.14.1
 whitenoise==4.1.2
-dotenv
