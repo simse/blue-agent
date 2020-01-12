@@ -1,6 +1,8 @@
 import threading
 from datetime import datetime, timedelta
 from functools import wraps
+import binascii
+import hashlib
 import random
 import string
 import time
@@ -17,6 +19,28 @@ from blueagent.models import Profile, Session
 
 # HTTP server
 app = Flask(__name__)
+
+# Password hashing
+def hash_password(password):
+    """Hash a password for storing."""
+    salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
+    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), 
+                                salt, 100000)
+    pwdhash = binascii.hexlify(pwdhash)
+
+    return (salt + pwdhash).decode('ascii')
+ 
+def verify_password(stored_password, provided_password):
+    """Verify a stored password against one provided by user"""
+    salt = stored_password[:64]
+    stored_password = stored_password[64:]
+    pwdhash = hashlib.pbkdf2_hmac('sha512', 
+                                  provided_password.encode('utf-8'), 
+                                  salt.encode('ascii'), 
+                                  100000)
+    pwdhash = binascii.hexlify(pwdhash).decode('ascii')
+
+    return pwdhash == stored_password
 
 
 # Authentication decorator
@@ -37,11 +61,12 @@ def auth_required(f):
 
 
 class WebThread(threading.Thread):
-
     def __init__(self):
         threading.Thread.__init__(self, name='WebThread')
 
     def run(self):
+        print(hash_password("hotfla123As"))
+
         app.run(host='0.0.0.0', port=os.getenv("WEB_PORT"))
 
 
@@ -70,6 +95,9 @@ def auth():
 
     # Fetch user
     user = Profile.get(email=email)
+
+    if not verify_password(user.password, password):
+        return jsonify({"error":"INCORRECT_CREDENTIALS","error_msg":"The supplied credentials are incorrect."})
 
     # Create session key (TODO: Actually authenticate)
     session = Session(
