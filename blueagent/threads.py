@@ -111,7 +111,7 @@ def auth():
 
 @app.route('/ping')
 @auth_required
-def get_user():
+def ping():
     return jsonify({"status":"OK"})
 
 
