@@ -5,6 +5,7 @@ import random
 import string
 import time
 import json
+import os
 
 from flask import Flask, jsonify, request
 from fbchat import Client
@@ -41,7 +42,7 @@ class WebThread(threading.Thread):
         threading.Thread.__init__(self, name='WebThread')
 
     def run(self):
-        app.run(host='0.0.0.0', port=8000)
+        app.run(host='0.0.0.0', port=os.getenv("WEB_PORT"))
 
 
 @app.route('/')
