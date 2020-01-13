@@ -179,7 +179,7 @@ def post_monitor():
         m = Monitor(
             name=request.get_json()['name'],
             user=user,
-            filters=[]
+            filters=request.get_json()['filters']
         )
 
     return jsonify(m.to_dict())
