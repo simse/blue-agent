@@ -52,10 +52,11 @@ def auth_required(f):
         # Verify existence of session key
         if(request.args.get('session_key')):
             pass
-        elif(request.form.get('session_key')):
-            pass
         else:
-            return jsonify({"error":"NO_SESSION_KEY","error_msg":"You must supply a session key to access this route."})
+            try:
+                request.get_json()['session_key']
+            except KeyError:
+                return jsonify({"error":"NO_SESSION_KEY","error_msg":"You must supply a session key to access this route."})
 
         return f(*args, **kwargs)
 
@@ -164,25 +165,22 @@ def get_monitor(id):
 @auth_required
 @db_session
 def post_monitor():
-    session_key = request.form.get('session_key')
+    session_key = request.get_json()['session_key']
 
     # Get user associated with session key
     user = Session.get(session_key=session_key).user
 
     # Create new monitor if no ID is found
-    if not request.form.get('id'):
+    try:
+        m = Monitor.get(id=request.get_json()['id'])
+        m.name = request.get_json()['name']
+        m.filters = request.get_json()['filters']
+    except KeyError:
         m = Monitor(
-            name=request.form.get('name'),
+            name=request.get_json()['name'],
             user=user,
             filters=[]
         )
-
-    # Update monitor if it already exists
-    else:
-        m = Monitor.get(id=request.form.get('id'))
-        m.name = request.form.get('name')
-        m.filters = json.loads(request.form.get('filters'))
-
 
     return jsonify(m.to_dict())
 
