@@ -5,7 +5,7 @@ from observable import Observable
 
 from blueagent.logger import logger
 from blueagent.models import *
-from blueagent.filters import filters
+from blueagent.filters import evaluate_filter
 
 
 def new_item_event(item):
@@ -18,14 +18,14 @@ def new_item_event(item):
 
         # Check all filters
         for f in monitor.filters:
-            if item.evaluate_filter(f['filter'], f['args']):
+            if evaluate_filter(f['filter'], item, f['args']):
                 passed = True
             else:
                 passed = False
                 break
 
         if passed:
-            item_match(monitor.user, item.item, monitor)
+            item_match(monitor.user, item, monitor)
 
 
 def new_user(profile):
@@ -46,7 +46,7 @@ For at tilføje overvågningsfiltre skal du logge ind på https://walsingham.app
 def item_match(profile, item, monitor):
     logger.info("[ITEM MATCH] Notifying profile")
 
-    body = 'Jeg har fundet en annonce til dig!\nTitel: {}\nPris: {}DKK\n{}'.format(item.title, item.price, item.dba_url)
+    body = 'Jeg har fundet en annonce til dig!\nTitel: {}\nPris: {}DKK\n{}'.format(item.title, item.price, item.url)
 
     # Message
     n = Notification(
@@ -56,6 +56,6 @@ def item_match(profile, item, monitor):
 
     h = Hit(
         trigger=monitor,
-        item=Item.get(url=item.dba_url),
+        item=item,
         date_triggered=datetime.now()
     )

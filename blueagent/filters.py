@@ -54,3 +54,6 @@ filters = {
     'price_under': price_under,
     'price_over': price_over
 }
+
+def evaluate_filter(filter, item, args):
+    filters[filter](item, args)

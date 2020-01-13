@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from urllib.parse import urlparse
+
 from pony.orm import *
 
 db = Database()
@@ -15,6 +15,7 @@ class Item(db.Entity):
     provider_id = Required(str)
     url = Required(str)
     title = Required(str)
+    status = Required(str, default='ACTIVE') # ACTIVE, UPDATED, DELETED
     description = Required(str, max_len=5000)
     price = Required(int)
     images = Required(Json)
@@ -22,6 +23,22 @@ class Item(db.Entity):
     seller = Required(Json)
     date_added = Required(datetime)
     hits = Set("Hit")
+    history = Set("ItemHistory")
+
+
+class ItemHistory(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    provider = Required(str)
+    provider_id = Required(str)
+    url = Required(str)
+    title = Required(str)
+    description = Required(str, max_len=5000)
+    price = Required(int)
+    images = Required(Json)
+    item_data = Required(Json)
+    seller = Required(Json)
+    date_updated = Required(datetime)
+    item = Required(Item)
 
 
 class Profile(db.Entity):

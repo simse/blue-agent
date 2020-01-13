@@ -14,13 +14,17 @@ from flask_cors import CORS
 from fbchat import Client
 from fbchat.models import *
 
-from blueagent.run import *
+from blueagent.providers.dba import Dba
+from blueagent.providers.guloggratis import GulOgGratis
 from blueagent.logger import logger
-from blueagent.models import Profile, Session
+from blueagent.models import *
+from blueagent.run import welcome_users
 
 # HTTP server
 app = Flask(__name__)
 CORS(app)
+
+
 
 # Password hashing
 def hash_password(password):
@@ -31,7 +35,7 @@ def hash_password(password):
     pwdhash = binascii.hexlify(pwdhash)
 
     return (salt + pwdhash).decode('ascii')
- 
+
 def verify_password(stored_password, provided_password):
     """Verify a stored password against one provided by user"""
     salt = stored_password[:64]
@@ -207,18 +211,23 @@ class BlueAgentThread(threading.Thread):
 
     def run(self):
         cycle = 0
+        dba = Dba()
+        gg = GulOgGratis()
 
         while True:
             # Run certain tasks
             if cycle is 0:
-                sync()
+                dba.sync()
+                gg.sync()
 
             if cycle % 10 is 0:
-                quick_sync()
+                dba.quick_sync()
+                gg.quick_sync()
                 welcome_users()
 
             if cycle % 60 is 0:
-                clean_items()
+                # clean_items()
+                pass
 
             cycle += 1
 
