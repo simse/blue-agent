@@ -10,10 +10,10 @@ def parse_args(args):
 def contains_text(item, args):
     args = parse_args(args)
 
-    if args['text'] in item.title.lower():
+    if args['text'].lower() in item.title.lower():
         return True
 
-    if args['text'] in item.description.lower():
+    if args['text'].lower() in item.description.lower():
         return True
 
     return False

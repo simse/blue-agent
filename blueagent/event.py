@@ -8,9 +8,6 @@ from blueagent.models import *
 from blueagent.filters import filters
 
 
-event = Observable()
-
-@event.on("new_item")
 def new_item_event(item):
     # Check all rules from profiles
     monitors = Monitor.select()
@@ -21,22 +18,16 @@ def new_item_event(item):
 
         # Check all filters
         for f in monitor.filters:
-            try:
-                if item.evaluate_filter(f['filter'], f['args']):
-                    passed = True
-                else:
-                    passed = False
-                    break
-            except AttributeError:
+            if item.evaluate_filter(f['filter'], f['args']):
+                passed = True
+            else:
                 passed = False
                 break
-
 
         if passed:
             item_match(monitor.user, item.item, monitor)
 
 
-@event.on("new_user")
 def new_user(profile):
     logger.info("[NEW USER] Sending notification...")
 
@@ -52,7 +43,6 @@ For at tilføje overvågningsfiltre skal du logge ind på https://walsingham.app
     profile.welcomed = True
 
 
-@event.on("item_match")
 def item_match(profile, item, monitor):
     logger.info("[ITEM MATCH] Notifying profile")
 
@@ -66,5 +56,6 @@ def item_match(profile, item, monitor):
 
     h = Hit(
         trigger=monitor,
-        date_triggered=datetime.datetime.now()
+        item=Item.get(url=item.dba_url),
+        date_triggered=datetime.now()
     )

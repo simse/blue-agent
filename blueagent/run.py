@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from blueagent.scrapers import *
 from blueagent.logger import logger
-from blueagent.event import event
+from blueagent.event import *
 
 categories = [
     "https://www.dba.dk/billede-og-lyd/hi-fi-surround-og-tilbehoer/",
@@ -39,7 +39,7 @@ def welcome_users():
     profiles = Profile.select(lambda p: not p.welcomed)
 
     for profile in profiles:
-        event.trigger('new_user', profile)
+        new_user(profile)
 
 
 def run_category_once(page):
@@ -83,12 +83,13 @@ def process_item(url):
         if item.save_to_database():
             commit()
             logger.info("[NEW_ITEM] Loaded item: {}".format(url))
-            event.trigger('new_item_event', item)
+            new_item_event(item)
 
 
 @db_session
 def clean_items():
-    items = select(
-        i for i in Item if i.date_added + timedelta(days=3) <= datetime.now()
-    ).delete()
+    # items = select(
+    #     i for i in Item if i.date_added + timedelta(days=3) <= datetime.now()
+    # ).delete()
+    pass
 

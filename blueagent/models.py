@@ -21,6 +21,7 @@ class Item(db.Entity):
     item_data = Required(Json)
     seller = Required(Json)
     date_added = Required(datetime)
+    hits = Set("Hit")
 
 
 class Profile(db.Entity):
@@ -40,12 +41,13 @@ class Monitor(db.Entity):
     user = Required(Profile)
     name = Required(str)
     filters = Required(Json)
-    hits = Set("Hit")
+    triggers = Set("Hit")
 
 
 class Hit(db.Entity):
     id = PrimaryKey(int, auto=True)
     trigger = Required(Monitor)
+    item = Required(Item)
     date_triggered = Required(datetime)
 
 

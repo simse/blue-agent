@@ -9,7 +9,6 @@ load_dotenv()
 # Blue Agent
 from blueagent.threads import *
 from blueagent.logger import *
-from blueagent.event import event
 
 
 def run():
