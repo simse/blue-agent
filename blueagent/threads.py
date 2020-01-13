@@ -189,12 +189,12 @@ def post_monitor():
 @auth_required
 @db_session
 def delete_monitor():
-    session_key = request.get_json()['session_key']
+    session_key = request.args.get('session_key')
 
     # Get user associated with session key
     user = Session.get(session_key=session_key).user
 
-    m = Monitor.get(id=request.get_json()['id'])
+    m = Monitor.get(id=request.args.get('id'))
     m.delete()
 
     return jsonify({})
