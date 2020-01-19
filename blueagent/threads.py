@@ -18,7 +18,7 @@ from blueagent.providers.dba import Dba
 from blueagent.providers.guloggratis import GulOgGratis
 from blueagent.logger import logger
 from blueagent.models import *
-from blueagent.run import welcome_users
+from blueagent.run import welcome_users, investigate
 
 # HTTP server
 app = Flask(__name__)
@@ -145,8 +145,14 @@ def get_monitors():
     user = Session.get(session_key=session_key).user
 
     monitors = []
-    for m in user.monitors:
-        monitors.append(m.to_dict())
+    for monitor in user.monitors:
+        monitor_dictionary = monitor.to_dict()
+        monitor_dictionary['hits'] = []
+
+        for hit in monitor.triggers:
+            monitor_dictionary['hits'].append(hit.to_dict())
+
+        monitors.append(monitor_dictionary)
 
     return jsonify(monitors)
 
@@ -217,6 +223,7 @@ class BlueAgentThread(threading.Thread):
         while True:
             # Run certain tasks
             if cycle is 0:
+                #investigate()
                 dba.sync()
                 gg.sync()
 

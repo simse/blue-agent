@@ -56,4 +56,4 @@ filters = {
 }
 
 def evaluate_filter(filter, item, args):
-    filters[filter](item, args)
+    return filters[filter](item, args)

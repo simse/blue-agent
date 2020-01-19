@@ -90,6 +90,7 @@ class DbaPage:
     def fetch(self):
         headers = {
             'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+            'cache-control': 'max-age=0'
         }
 
         page = requests.get(self.url + '?fra=privat', headers=headers)

@@ -34,9 +34,6 @@ class ItemHistory(db.Entity):
     title = Required(str)
     description = Required(str, max_len=5000)
     price = Required(int)
-    images = Required(Json)
-    item_data = Required(Json)
-    seller = Required(Json)
     date_updated = Required(datetime)
     item = Required(Item)
 

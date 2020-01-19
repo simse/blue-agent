@@ -108,7 +108,13 @@ class GGItem:
         headers = {
             'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
         }
-        self.source = requests.get(self.url, headers=headers).content
+        page = requests.get(self.url, headers=headers)
+
+        # Detect redirect
+        if len(page.history) > 0:
+            raise IndexError("This page does not exist: {}".format(self.url))
+
+        self.source = page.content
         self.parsed = BeautifulSoup(self.source, 'lxml')
 
 
@@ -173,6 +179,10 @@ class GGItem:
             item.seller = {}
 
         self.item = item
+
+        item = vars(item)
+
+        return item
 
     
     def save_to_database(self):
