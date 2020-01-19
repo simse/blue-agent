@@ -251,7 +251,7 @@ class NotificationThread(threading.Thread):
         threading.Thread.__init__(self, name='NotificationThread')
         logger.info("[NOTIFICATIONS] Connecting to Facebook Messenger")
 
-        self.client = Client('walsingham@simse.io', 'NuhpZ.Ujqqz8zavbN7nV')
+        self.client = Client('walsingham@simse.io', 'FZu5tEfmMFNGp8wQbArh')
 
     def run(self):
         while True:
