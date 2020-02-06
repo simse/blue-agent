@@ -186,6 +186,7 @@ class ItemPage(DbaPage):
         item.dba_id = re.search('\d{10}', self.url).group()
         item.price = int(self.parsed.find(class_='price-tag').text.replace(' kr.', '').replace('.', ''))
 
+        """ TODO: Fix seller info and item data for DBA
         # Find seller information
         item.seller.name = self.parsed.select('.ProfileTitle_profile-title__2rvIX')[0].text
 
@@ -211,8 +212,9 @@ class ItemPage(DbaPage):
                         pass
 
                 i = i + 1
-
-        item.item_data = item_data
+        """
+        item.item_data = []
+        
 
         # Find images
         image_gallery = self.parsed.select('.vip-picture-gallery a')

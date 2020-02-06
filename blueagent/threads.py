@@ -221,26 +221,29 @@ class BlueAgentThread(threading.Thread):
         gg = GulOgGratis()
 
         while True:
-            # Run certain tasks
-            if cycle is 0:
-                #investigate()
-                dba.sync()
-                gg.sync()
+            try:
+                # Run certain tasks
+                if cycle is 0:
+                    #investigate()
+                    dba.sync()
+                    gg.sync()
 
-            if cycle % 10 is 0:
-                dba.quick_sync()
-                gg.quick_sync()
-                welcome_users()
+                if cycle % 10 is 0:
+                    dba.quick_sync()
+                    gg.quick_sync()
+                    welcome_users()
 
-            if cycle % 60 is 0:
-                # clean_items()
-                pass
+                if cycle % 60 is 0:
+                    # clean_items()
+                    pass
 
-            cycle += 1
+                cycle += 1
 
-            # Reset cycle counter
-            if cycle > 600:
-                cycle = 0
+                # Reset cycle counter
+                if cycle > 600:
+                    cycle = 0
+            except Exception as error:
+                logger.error("[WALINGHAM] Exception occurred: \n{}".format(error))
 
             time.sleep(1)
 
