@@ -226,11 +226,11 @@ class BlueAgentThread(threading.Thread):
                 if cycle is 0:
                     #investigate()
                     dba.sync()
-                    gg.sync()
+                    # gg.sync()
 
                 if cycle % 10 is 0:
                     dba.quick_sync()
-                    gg.quick_sync()
+                    # gg.quick_sync()
                     welcome_users()
 
                 if cycle % 60 is 0:
